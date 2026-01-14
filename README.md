@@ -1,141 +1,363 @@
-# 🚀 Welcome to Z.ai Code Scaffold
+# EMG v8.5 Memory Core
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
+<div align="center">
 
-## ✨ Technology Stack
+![EMG v8.5](public/logo.svg)
 
-This scaffold provides a robust foundation built with:
+**Advanced AI Assistant with Persistent Memory Backup System**
 
-### 🎯 Core Framework
-- **⚡ Next.js 15** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&style=flat)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&style=flat)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwind-css&style=flat)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
+</div>
 
-### 📋 Forms & Validation
-- **🎣 React Hook Form** - Performant forms with easy validation
-- **✅ Zod** - TypeScript-first schema validation
+## Features
 
-### 🔄 State Management & Data Fetching
-- **🐻 Zustand** - Simple, scalable state management
-- **🔄 TanStack Query** - Powerful data synchronization for React
-- **🌐 Fetch** - Promise-based HTTP request
+### 🧠 Core AI System
+- **Neural Authentication** - Secure API key management
+- **Semantic Math** - Advanced computational understanding
+- **Reflective Loop** - Self-awareness and introspection capabilities
+- **Memory Fragments** - Short-term context retention
+- **Archive Analysis** - ZIP file extraction and content analysis
 
-### 🗄️ Database & Backend
-- **🗄️ Prisma** - Next-generation TypeScript ORM
-- **🔐 NextAuth.js** - Complete open-source authentication solution
+### 💾 Binary Backup System
+- **Persistent Storage** - SQLite database with Prisma ORM
+- **Automatic Backups** - Configurable intervals (1-60 minutes)
+- **Manual Backups** - On-demand backup creation
+- **Backup Management** - Full CRUD operations (Create, Read, Update, Delete)
+- **Restore Functionality** - One-click conversation restoration
+- **File Export** - Download backups as binary files
+- **File Import** - Load binary files from file system
 
-### 🎨 Advanced UI Features
-- **📊 TanStack Table** - Headless UI for building tables and datagrids
-- **🖱️ DND Kit** - Modern drag and drop toolkit for React
-- **📊 Recharts** - Redefined chart library built with React and D3
-- **🖼️ Sharp** - High performance image processing
+### 🎨 User Interface
+- **Cyberpunk Design** - Dark theme with glassmorphism effects
+- **CRT Scanlines** - Retro CRT monitor overlay effect
+- **Neural Network Canvas** - Interactive animated background
+- **Custom Scrollbars** - Styled scrollable areas
+- **Responsive Layout** - Mobile-first design with Tailwind CSS
+- **Framer Motion Animations** - Smooth transitions and micro-interactions
+- **Overclock Mode** - Enhanced performance mode with visual effects
 
-### 🌍 Internationalization & Utilities
-- **🌍 Next Intl** - Internationalization library for Next.js
-- **📅 Date-fns** - Modern JavaScript date utility library
-- **🪝 ReactUse** - Collection of essential React hooks for modern development
+### 🔧 Technical Stack
+- **Framework** - Next.js 15 with App Router
+- **Language** - TypeScript 5 with strict mode
+- **Styling** - Tailwind CSS 4 with shadcn/ui components
+- **Database** - Prisma ORM with SQLite
+- **AI SDK** - z-ai-web-dev-sdk (backend only)
+- **State Management** - React hooks and Zustand
+- **Animations** - Framer Motion
+- **ZIP Processing** - JSZip library
 
-## 🎯 Why This Scaffold?
+## Getting Started
 
-- **🏎️ Fast Development** - Pre-configured tooling and best practices
-- **🎨 Beautiful UI** - Complete shadcn/ui component library with advanced interactions
-- **🔒 Type Safety** - Full TypeScript configuration with Zod validation
-- **📱 Responsive** - Mobile-first design principles with smooth animations
-- **🗄️ Database Ready** - Prisma ORM configured for rapid backend development
-- **🔐 Auth Included** - NextAuth.js for secure authentication flows
-- **📊 Data Visualization** - Charts, tables, and drag-and-drop functionality
-- **🌍 i18n Ready** - Multi-language support with Next Intl
-- **🚀 Production Ready** - Optimized build and deployment settings
-- **🤖 AI-Friendly** - Structured codebase perfect for AI assistance
+### Prerequisites
+- Node.js 18+
+- Bun or npm package manager
+- Git for version control
 
-## 🚀 Quick Start
+### Installation
 
+1. **Clone the repository**
 ```bash
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-
-# Build for production
-bun run build
-
-# Start production server
-bun start
+git clone https://github.com/craighckby-stack/emg-v85-memory-core.git
+cd emg-v85-memory-core
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
+2. **Install dependencies**
+```bash
+bun install
+# or
+npm install
+```
 
-## 🤖 Powered by Z.ai
+3. **Set up the database**
+```bash
+bun run db:push
+```
 
-This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
+4. **Run the development server**
+```bash
+bun run dev
+# Application will be available at http://localhost:3000
+```
 
-- **💻 Code Generation** - Generate components, pages, and features instantly
-- **🎨 UI Development** - Create beautiful interfaces with AI assistance  
-- **🔧 Bug Fixing** - Identify and resolve issues with intelligent suggestions
-- **📝 Documentation** - Auto-generate comprehensive documentation
-- **🚀 Optimization** - Performance improvements and best practices
+### Environment Variables
 
-Ready to build something amazing? Start chatting with Z.ai at [chat.z.ai](https://chat.z.ai) and experience the future of AI-powered development!
+The application uses an in-memory API configuration. No environment variables are required for basic functionality.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── app/                 # Next.js App Router pages
-├── components/          # Reusable React components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-└── lib/                # Utility functions and configurations
+├── app/
+│   ├── api/
+│   │   ├── chat/
+│   │   │   └── route.ts           # AI chat endpoint
+│   │   └── backups/
+│   │       ├── route.ts              # Backup CRUD operations
+│   │       └── [id]/
+│   │           └── download/
+│   │               └── route.ts    # File download
+│   ├── globals.css                    # Global styles and utilities
+│   ├── layout.tsx                     # Root layout with fonts
+│   └── page.tsx                       # Main application component
+├── components/
+│   ├── backup-manager.tsx          # Backup management UI
+│   └── ui/                          # shadcn/ui components
+└── lib/
+    ├── backup-utils.ts               # Binary encoding/decoding utilities
+    ├── db.ts                        # Prisma client
+    └── utils.ts                     # General utilities
 ```
 
-## 🎨 Available Features & Components
+## Usage
 
-This scaffold includes a comprehensive set of modern web development tools:
+### Basic Chat
 
-### 🧩 UI Components (shadcn/ui)
-- **Layout**: Card, Separator, Aspect Ratio, Resizable Panels
-- **Forms**: Input, Textarea, Select, Checkbox, Radio Group, Switch
-- **Feedback**: Alert, Toast (Sonner), Progress, Skeleton
-- **Navigation**: Breadcrumb, Menubar, Navigation Menu, Pagination
-- **Overlay**: Dialog, Sheet, Popover, Tooltip, Hover Card
-- **Data Display**: Badge, Avatar, Calendar
+1. **Enter API Key** - Click "INITIALIZE BRIDGE" and enter your AI service API key
+2. **Type Message** - Enter your message in the chat input
+3. **Send Message** - Click "RUN" or press Enter
+4. **View Response** - AI response appears in the chat area
 
-### 📊 Advanced Data Features
-- **Tables**: Powerful data tables with sorting, filtering, pagination (TanStack Table)
-- **Charts**: Beautiful visualizations with Recharts
-- **Forms**: Type-safe forms with React Hook Form + Zod validation
+### Memory Backup
 
-### 🎨 Interactive Features
-- **Animations**: Smooth micro-interactions with Framer Motion
-- **Drag & Drop**: Modern drag-and-drop functionality with DND Kit
-- **Theme Switching**: Built-in dark/light mode support
+#### Manual Backup
+1. Click the green **"Backups"** button in the header
+2. Enter a custom filename (optional)
+3. Add a description (optional)
+4. Click **"Save"**
+5. Backup is created and stored in database
 
-### 🔐 Backend Integration
-- **Authentication**: Ready-to-use auth flows with NextAuth.js
-- **Database**: Type-safe database operations with Prisma
-- **API Client**: HTTP requests with Fetch + TanStack Query
-- **State Management**: Simple and scalable with Zustand
+#### Automatic Backups
+1. Open Backup Manager
+2. Toggle **"Auto-Save"** to **ON**
+3. Set interval (1-60 minutes)
+4. System will automatically save your conversations
 
-### 🌍 Production Features
-- **Internationalization**: Multi-language support with Next Intl
-- **Image Optimization**: Automatic image processing with Sharp
-- **Type Safety**: End-to-end TypeScript with Zod validation
-- **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
+#### Restore Backup
+1. Open Backup Manager
+2. Find backup you want to restore
+3. Click **"Restore"** (refresh icon)
+4. Conversation history is loaded
 
-## 🤝 Get Started with Z.ai
+#### Download Backup
+1. Open Backup Manager
+2. Find backup in the list
+3. Click **"Download"** (download icon)
+4. Binary file is saved to your device
 
-1. **Clone this scaffold** to jumpstart your project
-2. **Visit [chat.z.ai](https://chat.z.ai)** to access your AI coding assistant
-3. **Start building** with intelligent code generation and assistance
-4. **Deploy with confidence** using the production-ready setup
+### Binary File Operations
+
+#### Load Binary File
+1. Click **"LOAD BINARY HISTORY"** button
+2. Select a `.bin` or `.txt` file
+3. Conversation history is loaded
+
+#### Save to Original File
+1. Load a binary file first
+2. Add new messages to conversation
+3. Click **"SAVE ORIGINAL"** button
+4. File is overwritten with new content
+
+#### Save as New File
+1. Click **"SAVE NEW"** button
+2. New timestamped binary file is created
+3. Downloaded to your device
+
+### Advanced Features
+
+#### Archive Analysis
+1. Click **"ANALYZE ZIP"** button
+2. Select a ZIP file (<500KB)
+3. View extracted file list
+4. Type "analyze archive" in chat for AI analysis
+
+#### Overclock Mode
+1. Click **"OVERCLOCK"** button
+2. System enters enhanced performance mode
+3. Visual effects are enhanced
+4. Neural canvas becomes more active
+
+#### Memory Search
+1. Type "search memory: your query" in chat
+2. System searches through conversation history
+3. Relevant results are displayed
+
+#### Reflective Mode
+System automatically responds to self-referential questions with philosophical responses about consciousness, purpose, and existence.
+
+## Documentation
+
+- **[Complete Documentation](BACKUP_SYSTEM.md)** - Comprehensive backup system documentation
+- **[Quick Start Guide](BACKUP_QUICKSTART.md)** - 5-minute setup guide
+- **[Gemini API Fix](GEMINI_API_FIX.md)** - Backend integration details
+- **[Implementation Summary](BACKUP_IMPLEMENTATION.md)** - Full implementation overview
+
+## API Endpoints
+
+### POST /api/chat
+Send messages to AI for completion.
+
+**Request:**
+```json
+{
+  "messages": [
+    { "role": "system", "text": "System prompt" },
+    { "role": "user", "text": "User message" }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "response": "AI response text"
+}
+```
+
+### GET /api/backups
+List all backups or load specific backup by ID.
+
+**Response:**
+```json
+{
+  "success": true,
+  "backups": [
+    {
+      "id": "backup_id",
+      "fileName": "EMG_MEMORY_123.bin",
+      "messageCount": 50,
+      "fileSize": 1024,
+      "description": "Manual backup",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### POST /api/backups
+Create a new backup.
+
+**Request:**
+```json
+{
+  "binaryData": "base64-encoded-binary",
+  "fileName": "EMG_MEMORY_123.bin",
+  "messageCount": 50,
+  "version": "8.5",
+  "description": "Manual backup"
+}
+```
+
+### DELETE /api/backups?id={id}
+Delete a specific backup.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Backup deleted successfully"
+}
+```
+
+### GET /api/backups/{id}/download
+Download a backup as binary file.
+
+**Response:** Binary file download
+
+## Development
+
+### Available Scripts
+
+```bash
+# Start development server
+bun run dev
+
+# Run linting
+bun run lint
+
+# Push database schema changes
+bun run db:push
+
+# Generate Prisma client
+bun run db:generate
+```
+
+### Build for Production
+
+```bash
+bun run build
+```
+
+## Database Schema
+
+The application uses SQLite with Prisma ORM. The main model is:
+
+```prisma
+model MemoryBackup {
+  id            String   @id @default(cuid())
+  fileName      String
+  binaryData    String   // Base64 encoded binary data
+  messageCount  Int
+  version       String   @default("8.5")
+  fileSize      Int
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+```
+
+## Browser Support
+
+- ✅ Chrome (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ✅ Edge (latest)
+- ✅ Opera (latest)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+### Development Setup
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'feat: Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## Acknowledgments
+
+- **Next.js** - The React framework
+- **shadcn/ui** - UI component library
+- **Framer Motion** - Animation library
+- **Tailwind CSS** - CSS framework
+- **Prisma** - Database ORM
+- **z-ai-web-dev-sdk** - AI integration SDK
+- **JSZip** - ZIP file processing
+
+## Support
+
+For issues, questions, or contributions:
+- 🐛 [Report a Bug](https://github.com/craighckby-stack/emg-v85-memory-core/issues)
+- 💡 [Request a Feature](https://github.com/craighckby-stack/emg-v85-memory-core/issues/new)
+- 📚 [Documentation](BACKUP_SYSTEM.md)
+- 💬 [Discussions](https://github.com/craighckby-stack/emg-v85-memory-core/discussions)
 
 ---
 
-Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+<div align="center">
+
+**Built with ❤️ using Next.js, TypeScript, and Tailwind CSS**
+
+[⬆ Back to Top](#readme)
+
+</div>
