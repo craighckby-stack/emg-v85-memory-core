@@ -43,23 +43,26 @@ export async function parseBitstreamFile(file: File): Promise<BitstreamFile> {
 
   try {
     // Read file as text
-    const rawContent = await file.text()
-    result.rawContent = rawContent
+    result.rawContent = await file.text()
 
-    // Check if file appears to be binary or text
-    const isBinary = /[\x00-\x1F\x7F-\x9F]/.test(rawContent.substring(0, 1000))
-
-    if (isBinary) {
-      result.parseError = 'File appears to be binary and cannot be parsed as text'
-      return result
+    // Try to decode if it appears to be binary string
+    const bits = result.rawContent.replace(/[^01]/g, '')
+    let decoded = ''
+    if (bits.length >= 8) {
+      for (let i = 0; i < bits.length; i += 8) {
+        const byte = bits.substring(i, i + 8)
+        if (byte.length === 8) {
+          decoded += String.fromCharCode(parseInt(byte, 2))
+        }
+      }
     }
 
-    // Try to decode if it's a binary representation
-    result.decodedContent = decodeBitstream(rawContent)
-    result.isValid = true
+    // Use decoded content if it's valid, otherwise use raw
+    result.decodedContent = decoded.length > 50 ? decoded : result.rawContent
+    result.isValid = result.decodedContent.length > 0
 
     return result
-  } catch (error) {
+  } catch (error: any) {
     result.parseError = error instanceof Error ? error.message : 'Unknown error'
     return result
   }
@@ -68,20 +71,20 @@ export async function parseBitstreamFile(file: File): Promise<BitstreamFile> {
 /**
  * Decode bitstream format to text
  */
-function decodeBitstream(content: string): string {
+export function decodeBitstream(content: string): string {
   // Remove non-binary characters
   const bits = content.replace(/[^01]/g, '')
 
   // Convert to text
-  let decoded = ''
+  let text = ''
   for (let i = 0; i < bits.length; i += 8) {
     const byte = bits.substring(i, i + 8)
     if (byte.length === 8) {
-      decoded += String.fromCharCode(parseInt(byte, 2))
+      text += String.fromCharCode(parseInt(byte, 2))
     }
   }
 
-  return decoded.trim()
+  return text.trim()
 }
 
 /**
@@ -93,10 +96,10 @@ export function detectAnomalies(content: string): Anomaly[] {
 
   // Patterns for different types of anomalies
   const patterns = {
-    undefinedWords: /\b(undefined|undefined_variable|unknown_constant|delta_str|unknown_value|null_reference|void_parameter)\b/gi,
-    undefinedEquations: /(Delta-[a-z]+|Unknown-[A-Z]+|Var_[0-9]+|X_[a-z]+|undef_[a-z]+)/g,
-    anomalousCode: /(function\s+[a-z0-9]*\s*\(\s*\)\s*\{?\s*\}|class\s+[A-Z][a-z]+\s*\{?\s*\}|for\s*\(\s*[a-z]+\s*in\s*undefined\s*\))/g,
-    undefinedEntities: /\b(ENTITY_[0-9]+|UNDEF_\w+|UNKNOWN_\w+|MYSTERY_\w+|ANOMALY_\w+)\b/gi
+    undefinedWords: /\b(undefined|unknown_variable|unknown_constant|null_reference|void_parameter)\b/gi,
+    undefinedEquations: /(Delta-[a-z]+|Unknown-[A-Z]+|undefined_[a-z0-9]+|unknown_[A-Z]+|\?[a-z]+\st)/gi,
+    undefinedCode: /(function\s+[a-z0-9]*\s*\(\s*\)\s*\{\s*\}|class\s+[A-Z][a-z]+\s*\{\s*\}.*\n.*\{\s*}|for\s*\(\s*;\s*\))/gi,
+    undefinedEntities: /\b(ENTITY_[0-9]+|SYSTEM_[A-Z]+|UNDEF_\w+)\b/gi
   }
 
   // Scan line by line
@@ -107,7 +110,7 @@ export function detectAnomalies(content: string): Anomaly[] {
       anomalies.push({
         type: 'WORD',
         item: words[0],
-        reason: 'Jargon or term used without proper context or definition',
+        reason: 'Jargon or term used without proper definition',
         position: content.indexOf(line),
         line: lineIndex + 1,
         severity: 'low'
@@ -127,13 +130,13 @@ export function detectAnomalies(content: string): Anomaly[] {
       })
     }
 
-    // Check for anomalous code fragments
-    const code = patterns.anomalousCode.exec(line)
+    // Check for anomalous code
+    const code = patterns.undefinedCode.exec(line)
     if (code) {
       anomalies.push({
-        type: 'CODE',
+        type: 'code',
         item: code[0],
-        reason: 'Code fragment lacks implementation or proper syntax',
+        reason: 'Code fragment appears incomplete or improperly structured',
         position: content.indexOf(line),
         line: lineIndex + 1,
         severity: 'high'
@@ -181,7 +184,7 @@ export function generateAnomalyStats(anomalies: Anomaly[]) {
     bySeverity: {} as Record<string, number>
   }
 
-  anomalies.forEach(anomaly => {
+  anomalies.forEach((anomaly) => {
     stats.byType[anomaly.type] = (stats.byType[anomaly.type] || 0) + 1
     stats.bySeverity[anomaly.severity] = (stats.bySeverity[anomaly.severity] || 0) + 1
   })
@@ -203,48 +206,29 @@ export function formatBytes(bytes: number): string {
  */
 export function extractEntities(text: string): string[] {
   const entityPatterns = [
-    /\b[A-Z][a-z]+(?:System|Network|Data|Core|Vessel|Bridge|Matrix)\b/g,
-    /\b(?:EMG|CORE|MEMORY|SYSTEM|NEURAL|QUANTUM|CYPBER)\b/gi,
-    /\b(?:undefined|unknown|variable|parameter|constant)\s+[a-z0-9_]+/gi
+    /\b[A-Z][a-z]+(?:System|Network|Data|Core|Vessel|Bridge|Memory|Database|API|UI|Component|Library|Model|Agent|Bot|Server|Client|State|Status|Action|Event|Handler|Controller|Service|Provider|Repository|File|Directory|Path|Route|Endpoint|Response|Request|Query|Parameter|Argument|Return|Error|Warning|Message|Log|Debug|Test|Build|Deploy|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Wait|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fix|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Analyze|Diagnose|Debug|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Reduce|Find|Search|Match|Index|Key|Value|Item|List|Queue|Stack|Trace|Dump|Export|Import|Save|Load|Delete|Update|Create|Read|Write|Seek|Tell|Get|Post|Put|Patch|Merge|Diff|Compare|Sync|Async|Wait|Timeout|Retry|Cancel|Close|Open|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|State|Data|Config|Setting|Option|Flag|Tag|Label|Title|Description|Note|Comment|Code|Function|Class|Interface|Type|Property|Value|Object|Array|String|Number|Boolean|Null|Undefined|Unknown|Error|Warn|Info|Success|Fail|Pass|Skip|Ignore|Include|Exclude|Filter|Sort|Map|Add|Remove|Insert|Update|Delete|Query|Select|Choose|Toggle|Switch|Flip|Toggle|Enable|Disable|Start|Stop|Pause|Resume|Clear|Reset|Init|Run|Exec|Call|Invoke|Apply|Render|Parse|Validate|Verify|Check|Test|Mock|Stub|Proxy|Adapter|Driver|Client|Server|Database|File|Stream|Buffer|Cache|Store|Session|Token|Auth|Login|Logout|User|Admin|Role|Permission|Scope|Context|Status: undefined)\b/gi
   ]
-
-  const entities: string[] = []
-  entityPatterns.forEach(pattern => {
-    const matches = text.match(pattern)
-    if (matches) {
-      matches.forEach(match => {
-        if (!entities.includes(match)) {
-          entities.push(match)
-        }
-      })
-    }
-  })
-
-  return [...new Set(entities)] // Remove duplicates
+  return entities.filter(Boolean)
 }
 
 /**
  * Validate bitstream content
  */
-export function validateBitstream(content: string): {
-  valid: boolean
-  issues: string[]
-  issues?: string[]
-} {
+export function validateBitstream(content: string): { valid: boolean; issues: string[] } {
   const issues: string[] = []
 
-  // Check for common issues
   if (content.length === 0) {
-    issues.push('Bitstream is empty')
+    issues.push('Bitstream content is empty')
+    return { valid: false, issues }
   }
 
   if (content.length > 100000) {
-    issues.push('Bitstream exceeds 100KB limit')
+    issues.push('Bitstream content exceeds 100KB limit')
   }
 
-  const nullMatches = content.match(/null|undefined|void)/gi)
-  if (nullMatches && nullMatches.length > 10) {
-    issues.push(`High frequency of null/undefined values: ${nullMatches.length} occurrences`)
+  const nullMatches = content.match(/null|undefined|void|NaN|null_pointer|undefined_variable|unknown_constant)\b/gi)
+  if (nullMatches && nullMatches.length > 5) {
+    issues.push(`High frequency of null/undefined references: ${nullMatches.length} occurrences`)
   }
 
   return {
@@ -264,4 +248,26 @@ export function sanitizeBitstream(content: string): string {
     .replace(/[\x00-\x1F\x7F]/g, '')
     // Trim
     .trim()
+}
+
+/**
+ * Generate anomaly report text
+ */
+export function generateAuditReportText(anomalies: Anomaly[], model: string, bufferSize: number): string {
+  let content = `EMG SYSTEM AUDIT REPORT\nGenerated: ${new Date().toLocaleString()}\n`
+  content += `Model: ${model}\n`
+  content += `Anomalies Isolated: ${anomalies.length}\n`
+  content += `Buffer Size: ${formatBytes(bufferSize)}\n`
+  content += `------------------------------------------\n\n`
+
+  anomalies.forEach((anomaly, index) => {
+    content += `${index + 1}. [${anomaly.type}] ${anomaly.item}\n`
+    content += `   Severity: ${anomaly.severity.toUpperCase()}\n`
+    content += `   Reason: ${anomaly.reason}\n\n`
+  })
+
+  content += `\nEnd of Report\n`
+  content += `Generated by EMG Core v9.6 Anomaly Detection System\n`
+
+  return content
 }
