@@ -410,22 +410,6 @@ export default function EMGCorePage() {
       }
     }
 
-    // Query AI
-    await queryAI(userText) else {
-      createMessage('ai', 'No matching patterns found in memory banks.')
-    }
-  }
-
-  // Query AI
-  const queryAI = async (prompt: string) => {
-    if (!apiKey) {
-      await createMessage('ai', 'Auth Required for External Bridge.')
-      setStatus(status === 'online' ? 'online' : 'offline')
-      return
-    }
-
-    // Build full message history for context
-    const messages: any[] = []
 
     // Add system message
     messages.push({
