@@ -16,11 +16,13 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { BackupManager } from '@/components/backup-manager'
+import { AnomalyManager } from '@/components/anomaly-manager'
 import {
   binaryToConversation,
   conversationToBinary,
   binaryToUint8Array,
 } from '@/lib/backup-utils'
+import type { Anomaly } from '@/lib/bitstream-utils'
 
 interface Message {
   role: 'user' | 'ai' | 'system'
@@ -48,7 +50,7 @@ export default function EMGCorePage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'system',
-      text: 'Identity: **EMG Core v8.5 (Memory Enhanced)**.\n\n- **Semantic Math**: Online.\n- **Reflective Loop**: Active.\n- **Memory Fragments**: Enabled (Context retention).\n- **Binary Load**: Ready (Inject .bin history).\n- **Archive Analysis**: Ready (Extract .zip).',
+      text: 'Identity: **EMG Core v9.6 Core Vessel (Anomaly Enhanced)**.\n\n- **Semantic Math**: Online.\n- **Reflective Loop**: Active.\n- **Memory Fragments**: Enabled (Context retention).\n- **Binary Load**: Ready (Inject .bin history).\n- **Archive Analysis**: Ready (Extract .zip).\n- **Bitstream Buffer**: Enabled (Binary file ingestion).\n- **Anomaly Detection**: Active (Entity, equation, code scanning).\n- **Audit System**: Enabled (Shadow detection & downloadable reports).',
       timestamp: new Date().toISOString()
     }
   ])
@@ -65,6 +67,18 @@ export default function EMGCorePage() {
   const [originalBinaryFileName, setOriginalBinaryFileName] = useState<string | null>(null)
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(false)
   const [autoSaveInterval, setAutoSaveInterval] = useState(5) // minutes
+
+  // v9.6 Enhanced Features - Bitstream Buffer & Anomaly Detection
+  const [neuralBuffer, setNeuralBuffer] = useState('')
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([])
+  const [isShadowMode, setIsShadowMode] = useState(false)
+  const [systemVersion, setSystemVersion] = useState('v9.6.0')
+
+  // v9.6 Enhanced Features - Bitstream Buffer & Anomaly Detection
+  const [buffer, setBuffer] = useState('')
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([])
+  const [isShadowMode, setIsShadowMode] = useState(false)
+  const [systemVersion, setSystemVersion] = useState('v9.6.0')
 
   const inputRef = useRef<HTMLInputElement>(null)
   const chatBoxRef = useRef<HTMLDivElement>(null)
@@ -328,7 +342,76 @@ export default function EMGCorePage() {
     if (results.length > 0) {
       const summary = results.slice(0, 3).map(r => `- ${r.text.substring(0, 150)}...`).join('\n')
       createMessage('ai', `Memory search: Found **${results.length}** relevant fragments:\n\n${summary}`)
-    } else {
+    }
+
+    // Scan buffer for anomalies
+    const scanBufferForAnomalies = async () => {
+      if (neuralBuffer.length === 0) {
+        createMessage('ai', 'Buffer is empty. Chat with EMG to generate neural buffer content first.')
+        return
+      }
+
+      createMessage('ai', 'Scanning neural buffer for anomalous entities, undefined words, and equations...')
+      
+      try {
+        const response = await fetch('/api/anomaly', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buffer: neuralBuffer,
+            model: 'gemini-2.0-flash-preview-09-2025'
+          })
+        })
+
+        const data = await response.json()
+
+        if (data.success && data.anomalies) {
+          setAnomalies(data.anomalies)
+          const anomaliesCount = data.anomalies.length
+          createMessage('ai', `Anomaly detection complete. Found **${anomaliesCount}** anomalies in neural buffer slice.`)
+        } else if (anomaliesCount === 0) {
+          createMessage('ai', 'No anomalies detected in current buffer slice. Neural patterns appear normal.')
+        }
+      } catch (error: any) {
+        createMessage('ai', `Anomaly scan error: ${error.message}`)
+      }
+    }
+
+    // Generate audit report
+    const generateAuditReport = async () => {
+      if (anomalies.length === 0) {
+        createMessage('ai', 'No anomalies to audit. Scan buffer first to detect issues.')
+        return
+      }
+
+      try {
+        const response = await fetch('/api/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            anomalies,
+            model: 'gemini-2.0-flash-preview-09-2025',
+            bufferSize: neuralBuffer.length,
+            systemStatus: {
+              bridgeStatus: status === 'online' ? 'active' : 'offline',
+              bufferLength: neuralBuffer.length,
+              timestamp: new Date().toISOString()
+            }
+          })
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          createMessage('ai', `Audit report generated successfully. File downloaded as **${data.filename}**`)
+        }
+      } catch (error: any) {
+        createMessage('ai', `Audit report generation failed: ${error.message}`)
+      }
+    }
+
+    // Query AI
+    await queryAI(userText) else {
       createMessage('ai', 'No matching patterns found in memory banks.')
     }
   }
