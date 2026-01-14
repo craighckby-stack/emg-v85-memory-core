@@ -195,8 +195,6 @@ export default function EMGCorePage() {
 
   // Connect to API
   const connect = async (key: string, silent = false) => {
-    if (!key) return
-
     if (!silent) {
       setStatus('processing')
     }
@@ -205,27 +203,29 @@ export default function EMGCorePage() {
     localStorage.setItem('emg_key', key)
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }] })
-        }
-      )
+      // Test connection with our new API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', text: 'ping' }]
+        })
+      })
 
-      if (response.ok) {
+      const data = await response.json()
+
+      if (response.ok && data.success) {
         log('Connection Established.', 'ok')
         setStatus('online')
       } else {
-        throw new Error('Auth Fail')
+        throw new Error(data.error || 'Connection failed')
       }
     } catch (e) {
-      log('Connection Failed: Invalid Key', 'err')
+      log('Connection Failed: Check server logs', 'err')
       setStatus('offline')
       toast({
         title: 'Connection Failed',
-        description: 'Invalid API Key',
+        description: 'Unable to connect to AI service. Please try again.',
         variant: 'destructive'
       })
     }
@@ -341,63 +341,60 @@ export default function EMGCorePage() {
       return
     }
 
-    // Build context
-    let fullPrompt = prompt
+    // Build full message history for context
+    const messages: any[] = []
 
+    // Add system message
+    messages.push({
+      role: 'system',
+      text: 'You are EMG_CORE v8.5, an advanced AI assistant with memory capabilities.'
+    })
+
+    // Add conversation history for context (last 5 messages)
     if (conversationHistory.length > 0) {
-      const contextSummary = conversationHistory
-        .slice(-5)
-        .map(msg => `${msg.role}: ${(msg.text || '').substring(0, 200)}`)
-        .join('\n')
-      fullPrompt = `[CONTEXT FROM MEMORY]\n${contextSummary}\n\n[CURRENT QUERY]\n${prompt}`
+      const recentHistory = conversationHistory.slice(-5)
+      recentHistory.forEach(msg => {
+        messages.push({
+          role: msg.role === 'ai' ? 'assistant' : msg.role,
+          text: msg.text || ''
+        })
+      })
     }
 
-    // Check archive analysis
-    if (/analyze\s+(the\s+)?archive/i.test(prompt) && zipContents) {
-      fullPrompt = buildArchiveAnalysisPrompt()
-    }
+    // Add current prompt
+    messages.push({
+      role: 'user',
+      text: prompt
+    })
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: fullPrompt }] }],
-            generationConfig: { temperature: 0.7 }
-          })
-        }
-      )
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages })
+      })
 
       const data = await response.json()
-      if (data.error) throw new Error(data.error.message)
 
-      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No Data.'
-      await createMessage('ai', responseText)
+      if (data.success) {
+        const responseText = data.response
+        await createMessage('ai', responseText)
 
-      // Save to conversation history
-      setConversationHistory(prev => [
-        ...prev,
-        { role: 'user', text: prompt, timestamp: new Date().toISOString() },
-        { role: 'ai', text: responseText, timestamp: new Date().toISOString() }
-      ])
-
+        // Save to conversation history
+        setConversationHistory(prev => [
+          ...prev,
+          { role: 'user', text: prompt, timestamp: new Date().toISOString() },
+          { role: 'ai', text: responseText, timestamp: new Date().toISOString() }
+        ])
+      } else {
+        throw new Error(data.error || 'Failed to get response')
+      }
     } catch (error: any) {
       log(`Bridge Error: ${error.message}`, 'err')
       await createMessage('ai', 'Critical Bridge Failure.')
     }
 
     setStatus(status === 'online' ? 'online' : 'offline')
-  }
-
-  // Build archive analysis prompt
-  const buildArchiveAnalysisPrompt = () => {
-    if (!zipContents) return ''
-    const fileList = zipContents.map(f =>
-      `- ${f.name} (${f.size} bytes)\nPreview: ${f.content.substring(0, 300)}...\n`
-    ).join('\n')
-    return `ARCHIVE ANALYSIS REQUEST\n\nYou are analyzing a compressed archive containing ${zipContents.length} files.\n\nFILE MANIFEST:\n${fileList}\n\nANALYSIS TASKS:\n1. Identify the primary purpose of this archive\n2. Detect any code files and summarize languages used\n3. Identify configuration files and their purpose\n4. Flag any sensitive data patterns\n5. Assess overall structure\n6. Provide recommendations\n\nRespond in structured format with clear sections.`
   }
 
   // Load binary history
