@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 node_modules
 /.pnp
@@ -22,6 +20,8 @@ node_modules
 
 # misc
 .DS_Store
+._*
+__MACOSX/
 *.pem
 
 # debug
@@ -31,7 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.production
 
 # vercel
 .vercel
@@ -46,4 +48,15 @@ dev.log
 test
 prompt
 
+# server
 server.log
+
+# database
+db/*.db
+db/*.db-journal
+db/*.db-shm
+db/*.db-wal
+
+# backup files
+*.bin
+!public/*.bin
